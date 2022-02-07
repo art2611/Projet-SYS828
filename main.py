@@ -72,10 +72,8 @@ def train(epoch):
         # Labels 1 and 2 are the same because the two inputs correspond to the same identity
 
         inputs = Variable(inputs.to(device))
-        print(inputs.shape)
-        inputs.expand(-1, 3)
-        print(inputs.shape)
-        exit()
+        inputs = inputs.expand(-1, 3, 70, 57) # Expand on 3 channels
+
         labels = Variable(labels.to(device))
 
         data_time.update(time.time() - end)
@@ -141,10 +139,7 @@ for fold in range(folds):
         trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,\
                                                   sampler=sampler, drop_last=True)
 
-        for inputs, labels in enumerate(trainloader):
-            print(inputs.shape)
-            print(labels.shape)
-            exit()
+
         train(epoch)
 
         if epoch != 0 and epoch % 2 == 0:
