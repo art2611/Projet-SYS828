@@ -11,18 +11,22 @@ from utils import SuperList, GenIdx, prepare_set, IdentitySampler, \
     prepare_dataset, prepare_data_ids,LFW_training_Data, AverageMeter
 import numpy as np
 import random
-    
+
 # Work on GPU if available
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 # Import the lfw dataset - With 15 img min per person
+print("===> Loading Fetch Dataset \n")
 lfw_people = fetch_lfw_people(min_faces_per_person=15, resize=0.4)
 nb_img_per_id_to_keep = 15
 X, y, n_classes = prepare_dataset(lfw_people, nb_img_per_id_to_keep)
 
+print("Dataset Loaded")
+
 # Get train / val folds ids and get test ids
 train_ids_lists, val_ids_lists, test_ids = prepare_data_ids(n_classes)
 
+print("")
 # Prepare training data
 num_img_of_same_id_in_batch = 4
 num_different_identities_in_batch = 8
@@ -108,7 +112,7 @@ def valid(epoch):
     pass
 
 for fold in range(folds):
-    net = model(n_classes)
+    net = model(n_classes).to(device)
 
     # Optimizer :
     lr = 0.1
