@@ -39,9 +39,12 @@ folds = 5
 # epochs = "nb_epoch_to_define"
 epochs = 10
 
+img_h, img_w = 224, 224
+
 transform_train = transforms.Compose([
     transforms.ToPILImage(),
     transforms.Pad(10),
+    transforms.RandomCrop((img_h, img_w)),
     transforms.RandomHorizontalFlip(),
     transforms.ToTensor(),
 ])
@@ -64,10 +67,15 @@ def train(epoch):
     batch_time = AverageMeter()
     correct = 0
     total = 0
+    end = time.time()
     for batch_idx, (inputs, labels) in enumerate(trainloader):
         # Labels 1 and 2 are the same because the two inputs correspond to the same identity
 
         inputs = Variable(inputs.to(device))
+        print(inputs.shape)
+        inputs.expand(-1, 3)
+        print(inputs.shape)
+        exit()
         labels = Variable(labels.to(device))
 
         data_time.update(time.time() - end)
@@ -133,10 +141,6 @@ for fold in range(folds):
         trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,\
                                                   sampler=sampler, drop_last=True)
 
-        for data, target in trainloader:
-            print(data.shape)
-            print(target.shape)
-            break
         train(epoch)
 
         if epoch != 0 and epoch % 2 == 0:

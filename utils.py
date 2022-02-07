@@ -32,6 +32,7 @@ def prepare_dataset(lfw_people, nb_img_per_id_to_keep):
         else:
             X = np.concatenate((X, X_label[random_selection, :]), axis=0)
             y.extend([label for _ in range(nb_img_per_id_to_keep)])
+
     return (X, y, n_classes)
 
 
@@ -123,7 +124,7 @@ def prepare_set(ids, nb_images_per_id, images_X, labels_y):
             label_query_gallery = [id for _ in range(nb_images_per_id)]
         else:
             query_gallery_img = np.concatenate((query_gallery_img, sublist), axis=0)
-            label_query_gallery.extend([label for _ in range(nb_images_per_id)])
+            label_query_gallery.extend([id for _ in range(nb_images_per_id)])
 
     return query_gallery_img, np.array(label_query_gallery)
 
@@ -155,7 +156,6 @@ class LFW_training_Data(data.Dataset):
     def __getitem__(self, index):
         #Dataset[i] return images from both modal and the corresponding label
         img, target = self.train_images[self.cIndex[index]], self.train_labels[self.cIndex[index]]
-
         img = self.transform(img)
         return img, target
 
