@@ -39,12 +39,12 @@ folds = 5
 # epochs = "nb_epoch_to_define"
 epochs = 10
 
-img_h, img_w = 224, 224
+# img_h, img_w = 224, 224
 
 transform_train = transforms.Compose([
     transforms.ToPILImage(),
     transforms.Pad(10),
-    transforms.RandomCrop((img_h, img_w)),
+    # transforms.RandomCrop((img_h, img_w)),
     transforms.RandomHorizontalFlip(),
     transforms.ToTensor(),
 ])
@@ -141,6 +141,10 @@ for fold in range(folds):
         trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,\
                                                   sampler=sampler, drop_last=True)
 
+        for inputs, labels in enumerate(trainloader):
+            print(inputs.shape)
+            print(labels.shape)
+            exit()
         train(epoch)
 
         if epoch != 0 and epoch % 2 == 0:
