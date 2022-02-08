@@ -12,7 +12,6 @@ def evaluation(distmat, query__gallery_labels, max_rank=20):
     # compute cmc curve for each query
     all_cmc = []
     all_AP = []
-    all_INP = []
     num_valid_q = 0.  # number of valid query
 
     for q_number in range(num_q):
@@ -34,13 +33,6 @@ def evaluation(distmat, query__gallery_labels, max_rank=20):
 
         cmc = raw_cmc.cumsum()
 
-        # compute mINP
-        # reference Deep Learning for Person Re-identification: A Survey and Outlook
-        pos_idx = np.where(raw_cmc == 1)
-        pos_max_idx = np.max(pos_idx)
-        inp = cmc[pos_max_idx] / (pos_max_idx + 1.0)
-        all_INP.append(inp)
-
         cmc[cmc > 1] = 1
 
         all_cmc.append(cmc[:max_rank])
@@ -60,5 +52,4 @@ def evaluation(distmat, query__gallery_labels, max_rank=20):
     all_cmc = np.asarray(all_cmc).astype(np.float32)
     all_cmc = all_cmc.sum(0) / num_valid_q
     mAP = np.mean(all_AP)
-    mINP = np.mean(all_INP)
-    return all_cmc, mAP, mINP
+    return all_cmc, mAP

@@ -19,7 +19,7 @@ def prepare_dataset(lfw_people, nb_img_per_id_to_keep):
     
     """
 
-    X, y, n_classes = None, None
+    X, y, n_classes = "A définir"
 
     return X, y, n_classes
 
@@ -33,19 +33,81 @@ def prepare_data_ids(n_classes):
 
     """
 
-    train_ids_lists, val_ids_lists, test_ids_list = None, None, None
+    train_ids_lists, val_ids_lists, test_ids_list = "A définir"
 
     return train_ids_lists, val_ids_lists, test_ids_list
 
-
+# Pour une liste y de labels, GenIdx génère une liste L de listes qui contiennent chacunes les positions des images pour un label donné.
+# Par exemple pour le label 4, on pourra accéder à la liste des positions des images associées à ce label via L[4]
 def GenIdx(train_label):
     color_pos = []
     unique_label_color = np.unique(train_label)
     for i in range(len(unique_label_color)):
-
         tmp_pos = [k for k, v in enumerate(train_label) if v == unique_label_color[i]]
         color_pos.append(tmp_pos)
     return color_pos
+
+def extract_fold_subset(X, img_pos, img_ids_to_extract):
+
+    """
+
+    Code attendu :
+
+    A partir des identités d'entraînement pour un fold donné (img_ids_to_extract):
+    X_extracted devra être la sous base de X contenant uniquement les images correspondant aux ids de img_ids_to_extract
+    y_extracted devra être la sous base de labels. Il est conseillé de re-labeliser les images directement, en
+    partant de 0. C'est à dire que les 15 premières images de la sous bases seront associées au nouveau label 0,
+    les 15 suivantes au nouveau label 1 etc...
+
+    """
+
+    X_extracted, y_extracted = "A définir"
+
+    return X_extracted, y_extracted
+
+class prepare_set(data.Dataset):
+    def __init__(self, X, img_pos, img_ids_to_extract, transform=None):
+
+        # Récupération du subset correspondant à un fold donné et relabel
+        # La fonction extract_fold_data est à définir
+        extracted_X, extracted_y = extract_fold_subset(X, img_pos, img_ids_to_extract)
+
+        self.test_image = extracted_X
+        self.test_label = extracted_y
+        self.transform = transform
+
+    def __getitem__(self, index):
+        img, target = self.test_image[index], self.test_label[index]
+        img = self.transform(img)
+        return img, target
+
+    def __len__(self):
+        #Should be the same len for both image 1 and image 2
+        return len(self.test_image)
+
+class LFW_training_Data(data.Dataset):
+    def __init__(self, X, img_pos, img_ids_to_extract, transform=None, colorIndex=None):
+
+        # Récupération du subset correspondant à un fold donné et relabel
+        # La fonction extract_fold_data est à définir
+        extracted_X, extracted_y = extract_fold_subset(X, img_pos, img_ids_to_extract)
+
+        self.train_images = extracted_X
+        self.train_labels = extracted_y
+
+        self.transform = transform
+
+        # Prepare index
+        self.cIndex = colorIndex
+
+    def __getitem__(self, index):
+        #Dataset[i] return image with its corresponding label
+        img, target = self.train_images[self.cIndex[index]], self.train_labels[self.cIndex[index]]
+        img = self.transform(img)
+        return img, target
+
+    def __len__(self):
+        return len(self.train_labels)
 
 # Sampler - Will select the right amount of ids and images per ids for the upcoming dataloader
 class IdentitySampler(Sampler):
@@ -78,71 +140,3 @@ class IdentitySampler(Sampler):
 
     def __len__(self):
         return self.N
-
-def prepare_set(ids, nb_images_per_id, images_X):
-    # Query and gallery are the same since we want to compare query to all gallery image
-    query_gallery_img = np.zeros((len(ids) * nb_images_per_id, 50, 37))
-
-    for i, id in enumerate(ids):
-        sublist = images_X[id * nb_images_per_id:id * nb_images_per_id + nb_images_per_id]
-
-        if i == 0:
-            query_gallery_img = sublist
-            label_query_gallery = [id for _ in range(nb_images_per_id)]
-        else:
-            query_gallery_img = np.concatenate((query_gallery_img, sublist), axis=0)
-            label_query_gallery.extend([id for _ in range(nb_images_per_id)])
-
-    return query_gallery_img, np.array(label_query_gallery), len(label_query_gallery)
-
-
-
-class LFW_training_Data(data.Dataset):
-    def __init__(self, X, img_pos, img_ids_to_extract, nb_img_per_id, transform=None, colorIndex=None):
-
-        """
-
-        Code attendu :
-
-        A partir des identitées d'entraînement pour un fold donné (img_ids_to_extract):
-        self.train_images devra être la sous base de X contenant uniquement les ids de img_ids_to_extract
-        self.train_labels devra être la sous base de labels. Il est conseillé de re-labeliser les images, en
-        partant de 0. C'est à dire que les 15 premières images de la sous bases seront associées au nouveau label 0,
-        les 15 suivantes au nouveau label 1 etc...
-
-        """
-
-
-        self.train_images = "X_to_keep"
-        self.train_labels = "relabel"
-
-        self.transform = transform
-        # Prepare index
-        self.cIndex = colorIndex
-
-    def __getitem__(self, index):
-        #Dataset[i] return image with its corresponding label
-        img, target = self.train_images[self.cIndex[index]], self.train_labels[self.cIndex[index]]
-        img = self.transform(img)
-        return img, target
-
-    def __len__(self):
-        return len(self.train_labels)
-
-class AverageMeter(object):
-    """Computes and stores the average and current value"""
-
-    def __init__(self):
-        self.reset()
-
-    def reset(self):
-        self.val = 0
-        self.avg = 0
-        self.sum = 0
-        self.count = 0
-
-    def update(self, val, n=1):
-        self.val = val
-        self.sum += val * n
-        self.count += n
-        self.avg = self.sum / self.count
