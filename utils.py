@@ -107,11 +107,13 @@ class LFW_training_Data(data.Dataset):
 
 # Sampler - Will select the right amount of ids and images per ids for the upcoming dataloader
 class IdentitySampler(Sampler):
+
     """Sample person identities evenly in each batch.
         Args:
-            train_color_label : labels of each modalities
+            train_labels : labels of each modalities
             color_pos : positions of each identity
-            batch_num_identities: batch size
+            num_of_same_id_in_batch : Number of images per identity in a batch
+            batch_num_identities: Number of identity in a batch
     """
 
     def __init__(self, train_labels, color_pos, num_of_same_id_in_batch, batch_num_identities):
