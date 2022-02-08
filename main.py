@@ -29,7 +29,7 @@ def valid(query_gall_loader, query_gallery_labels):
     # Extraire les features pour chaque image de la base de données
     query_gall_feat_pool, query_gall_feat= extract_query_gall_feat(query_gall_loader, n_query_gall, net, test_batch_size)
 
-    # Compute the similarity matrix based on the extracted features:
+    # Compute the similarity matrix based on the extracted features matrix:
     similarity_matrix_pool = "A définir"
     similarity_matrix_feat = "A définir"
 
@@ -39,7 +39,20 @@ def valid(query_gall_loader, query_gallery_labels):
 
     return cmc, mAP, cmc_att, mAP_att
 
+#
 def extract_query_gall_feat(query_gall_loader, ngall, net, batch_size):
+    """
+    Fonction d'extraction des caractéristiques et création d'une matrice contenant sur chaque ligne
+    le vecteur caractéristique d'une image.
+
+    Deux matrices sont en fait produites :
+        - L'une à partir du vecteur caractéristique produit après la couche average pooling
+        - L'autre à partir du vecteur caractéristique produit après la couche batch normalization
+
+    Dans la pratique, il est parfois plus intéressant de regarder les résultats de l'une ou de l'autre, donc
+    on testera les deux.
+
+    """
     net.eval()
     print('Extracting Gallery Feature...')
     # start = time.time()
@@ -58,6 +71,7 @@ def extract_query_gall_feat(query_gall_loader, ngall, net, batch_size):
         ptr = ptr + batch_size
 
     return gall_feat_pool, gall_feat
+
 
 if __name__ == "__main__":
 
@@ -80,18 +94,22 @@ if __name__ == "__main__":
     # test_ids sera une liste de 21 identités
     train_ids_lists, val_ids_lists, test_ids = prepare_data_ids(n_classes)
 
-    # Prepare var - Batch size
+    # Prepare var - Batch size - On utilise 4 images par identités et 8 identités par batch (=> 32 imgs)
     num_img_of_same_id_in_batch = 4
     num_different_identities_in_batch = 8
-    batch_size = num_img_of_same_id_in_batch * num_different_identities_in_batch
+    batch_size = num_img_of_same_id_in_batch * num_different_identities_in_batch # batch_size = 32
     test_batch_size = 32
+
     global_img_pos = GenIdx(y)  # Get the images positions in list for each specific identity
 
-    folds = "A définir"
-    epochs = "A définir"
 
+    folds = "A définir"  # Number of fold K for cross-validation
+    epochs = "A définir" # Number of epochs
+
+    # Augmentation de la taille des images
     img_h, img_w = 288, 144
 
+    # Préparation des transformations appliquées aux images pour l'entraînement ou le reste (validation / test)
     transform_train = transforms.Compose([
         transforms.ToPILImage(),
         transforms.Resize((img_h, img_w)),
@@ -117,8 +135,8 @@ if __name__ == "__main__":
         # Définir votre optimizer :
         opt = "A définir"
 
-        # Preparez votre query / gallery set pour la validation
-        # A noter que query set = gallery set si vous comptez comparer chaque image de la base avec toute les autres
+        # Préparation du query / gallery set pour la validation
+        # A noter que query set = gallery set si on compte comparer chaque image de la base avec toute les autres
         query_gall_set, n_query_gall = prepare_set(X, nb_img_per_id_to_keep, val_ids_lists[fold], transform=transform_test)
         query_gall_loader = torch.utils.data.DataLoader(query_gall_set, batch_size=test_batch_size, shuffle=False)
 
@@ -133,6 +151,7 @@ if __name__ == "__main__":
             # Permet de sampler la base de données par batch contenant le bon nombre d'identités et d'images par identités
             sampler = IdentitySampler(trainset.train_labels, img_pos, num_img_of_same_id_in_batch,
                                       num_different_identities_in_batch)
+
             trainset.cIndex = sampler.index
 
             trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, \
@@ -142,7 +161,7 @@ if __name__ == "__main__":
 
             # Call the validation every two epochs
             if epoch != 0 and epoch % 2 == 0:
-                cmc, mAP, cmc_att, mAP_att = valid(query_gall_loader, query_gall_set.test_label)
+                cmc, mAP, cmc_att, mAP_att = valid(query_gall_loader, query_gall_set.val_test_label)
 
                 # Save model based on validation mAP
                 if mAP > best_map:  # Usual saving

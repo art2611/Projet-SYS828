@@ -37,16 +37,6 @@ def prepare_data_ids(n_classes):
 
     return train_ids_lists, val_ids_lists, test_ids_list
 
-# Pour une liste y de labels, GenIdx génère une liste L de listes qui contiennent chacunes les positions des images pour un label donné.
-# Par exemple pour le label 4, on pourra accéder à la liste des positions des images associées à ce label via L[4]
-def GenIdx(train_label):
-    color_pos = []
-    unique_label_color = np.unique(train_label)
-    for i in range(len(unique_label_color)):
-        tmp_pos = [k for k, v in enumerate(train_label) if v == unique_label_color[i]]
-        color_pos.append(tmp_pos)
-    return color_pos
-
 def extract_fold_subset(X, img_pos, img_ids_to_extract):
 
     """
@@ -66,18 +56,24 @@ def extract_fold_subset(X, img_pos, img_ids_to_extract):
     return X_extracted, y_extracted
 
 class prepare_set(data.Dataset):
+    """
+
+    Classe permettant la création d'un set pour validation ou tests.
+    Vous aurez besoin de coder la fonction extract_fold_subset si ce n'est pas déjà fait.
+
+    """
     def __init__(self, X, img_pos, img_ids_to_extract, transform=None):
 
         # Récupération du subset correspondant à un fold donné et relabel
         # La fonction extract_fold_data est à définir
         extracted_X, extracted_y = extract_fold_subset(X, img_pos, img_ids_to_extract)
 
-        self.test_image = extracted_X
-        self.test_label = extracted_y
+        self.val_test_image = extracted_X
+        self.val_test_label = extracted_y
         self.transform = transform
 
     def __getitem__(self, index):
-        img, target = self.test_image[index], self.test_label[index]
+        img, target = self.val_test_image[index], self.val_test_label[index]
         img = self.transform(img)
         return img, target
 
@@ -140,3 +136,13 @@ class IdentitySampler(Sampler):
 
     def __len__(self):
         return self.N
+
+# Pour une liste y de labels, GenIdx génère une liste L de listes qui contiennent chacunes les positions des images pour un label donné.
+# Par exemple pour le label 4, on pourra accéder à la liste des positions des images associées à ce label via L[4]
+def GenIdx(train_label):
+    color_pos = []
+    unique_label_color = np.unique(train_label)
+    for i in range(len(unique_label_color)):
+        tmp_pos = [k for k, v in enumerate(train_label) if v == unique_label_color[i]]
+        color_pos.append(tmp_pos)
+    return color_pos
