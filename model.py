@@ -18,6 +18,7 @@ class model(nn.Module):
         avg_pool_X = self.layers(X)
         avg_pool_X = avg_pool_X.view(avg_pool_X.shape[0], -1) # Flatten
         feat = self.bottleneck(avg_pool_X)
+
         if self.train():
             return avg_pool_X, self.fc(feat)
         else:

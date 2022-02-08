@@ -1,7 +1,9 @@
 import time
 import torch
+import torch.utils.data
 import torch.optim as optim
 from loss import *
+from torch.autograd import Variable
 from model import model
 from Evaluation import evaluation
 from torchvision import transforms
@@ -22,33 +24,40 @@ def train(epoch, criterion, optimizer, trainloader, device, net):
     """
 
 # Fonction permettant la validation
-def valid(epoch):
-    # Prepare query gallery sets
+def valid(query_gall_loader, query_gallery_labels):
 
-    # Eventually save the model if this one is the best overall
+    # Extraire les features pour chaque image de la base de données
+    query_gall_feat_pool, query_gall_feat= extract_query_gall_feat(query_gall_loader, n_query_gall, net, test_batch_size)
 
-    # Get the timer
-    end = time.time()
-
-    # Extract features from query and gallery
-    query_gall_feat_pool, query_gall_feat= extract_query_gall_feat(query_gall_loader, n_query_gall, net=net)
-
-    print(f"Feature extraction time : {time.time() - end}")
-    start = time.time()
-
-    # Compute the similarity (cosine)
-    distmat_pool = np.matmul(query_gall_feat_pool, np.transpose(query_gall_feat_pool))
-    distmat_fc = np.matmul(query_gall_feat, np.transpose(query_gall_feat))
+    # Compute the similarity matrix based on the extracted features:
+    similarity_matrix_pool = "A définir"
+    similarity_matrix_feat = "A définir"
 
     # Evaluation - Compute metrics (Rank-1, Rank-5, mAP)
-
-    cmc_att, mAP_att  = evaluation(-distmat_pool, query_gallery_labels) # On avg_pool features
-    cmc, mAP = evaluation(-distmat_fc, query_gallery_labels)                # On batch normed features
-
-    print('Evaluation Time:\t {:.3f}'.format(time.time() - start))
+    cmc_att, mAP_att  = evaluation(-similarity_matrix_pool, query_gallery_labels)
+    cmc, mAP = evaluation(-similarity_matrix_feat, query_gallery_labels)
 
     return cmc, mAP, cmc_att, mAP_att
 
+def extract_query_gall_feat(query_gall_loader, ngall, net, batch_size):
+    net.eval()
+    print('Extracting Gallery Feature...')
+    # start = time.time()
+    ptr = 0
+    feat_size = 512
+    gall_feat_pool = np.zeros((ngall, feat_size))
+    gall_feat = np.zeros((ngall, feat_size))
+
+    with torch.no_grad():
+        # Boucle itérant sur chaque batch de validation à définir ici
+        for A_definir in "A définir":
+            feat_pool, feat = "A définir" # Extraire features pour chaque batch
+
+        gall_feat_pool[ptr:ptr + batch_size, :] = feat_pool.detach().cpu().numpy()
+        gall_feat[ptr:ptr + batch_size, :] = feat.detach().cpu().numpy()
+        ptr = ptr + batch_size
+
+    return gall_feat_pool, gall_feat
 
 if __name__ == "__main__":
 
@@ -75,6 +84,7 @@ if __name__ == "__main__":
     num_img_of_same_id_in_batch = 4
     num_different_identities_in_batch = 8
     batch_size = num_img_of_same_id_in_batch * num_different_identities_in_batch
+    test_batch_size = 32
     global_img_pos = GenIdx(y)  # Get the images positions in list for each specific identity
 
     folds = "A définir"
@@ -105,12 +115,12 @@ if __name__ == "__main__":
         net = model(n_classes).to(device)
 
         # Définir votre optimizer :
-        opt = "A remplir"
+        opt = "A définir"
 
         # Preparez votre query / gallery set pour la validation
         # A noter que query set = gallery set si vous comptez comparer chaque image de la base avec toute les autres
         query_gall_set, n_query_gall = prepare_set(X, nb_img_per_id_to_keep, val_ids_lists[fold], transform=transform_test)
-        query_gall_loader = torch.utils.data.DataLoader(query_gall_set, batch_size=32, shuffle=False)
+        query_gall_loader = torch.utils.data.DataLoader(query_gall_set, batch_size=test_batch_size, shuffle=False)
 
 
         best_map = 0
@@ -132,13 +142,12 @@ if __name__ == "__main__":
 
             # Call the validation every two epochs
             if epoch != 0 and epoch % 2 == 0:
-                cmc, mAP, cmc_att, mAP_att = valid(epoch)
+                cmc, mAP, cmc_att, mAP_att = valid(query_gall_loader, query_gall_set.test_label)
 
                 # Save model based on validation mAP
                 if mAP > best_map:  # Usual saving
 
-                    best_m
-                    ap = mAP
+                    best_map = mAP
                     best_epoch = epoch
                     state = {
                         'net': net.state_dict(),
