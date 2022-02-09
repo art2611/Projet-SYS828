@@ -1,4 +1,4 @@
-# Projet-SYS828
+# Rapport de laboratoire SYS828 - Approfondissements
 
 Le code ici présenté est fourni dans le cadre du cours SYS828-Systèmes Biométriques. 
 
