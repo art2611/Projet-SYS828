@@ -20,6 +20,8 @@ def train(epoch, criterion, optimizer, trainloader, device, net):
     """
 
     Se réferer éventuellement au laboratoire 5
+    On pensera à mettre les données sur 3 canaux au lieux de 1 via expand :
+    https://pytorch.org/docs/stable/generated/torch.Tensor.expand.html
 
     """
 
@@ -27,7 +29,7 @@ def train(epoch, criterion, optimizer, trainloader, device, net):
 def valid(query_gall_loader, query_gallery_labels):
 
     # Extraire les features pour chaque image de la base de données
-    query_gall_feat_pool, query_gall_feat= extract_query_gall_feat(query_gall_loader, n_query_gall, net, test_batch_size)
+    query_gall_feat_pool, query_gall_feat = extract_query_gall_feat(query_gall_loader, n_query_gall, net, test_batch_size)
 
     # Compute the similarity matrix based on the extracted features matrix:
     similarity_matrix_pool = "A définir"
