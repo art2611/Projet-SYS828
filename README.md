@@ -6,5 +6,5 @@ Ceci n'est qu'une ébauche de code devant vous aider à répondre au problème p
 
 **Correction :**
 
-08 Mars 2022 : Correction de la deuxième variable input de la fonction "prepare_set" dans le main (global_img_pos au lieu de nb_img_per_id_to_keep) ligne 142 du main
+08 Mars 2022 : Correction de la deuxième variable input de la fonction "prepare_set" dans le main (global_img_pos au lieu de nb_img_per_id_to_keep) ligne 142 du main.
 
