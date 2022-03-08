@@ -23,5 +23,3 @@ class model(nn.Module):
         else:
             return avg_pool_X, feat
 
-# net = model(n_class=10)
-# a = net(torch.rand(64, 3, 144, 288))
