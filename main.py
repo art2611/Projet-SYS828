@@ -140,7 +140,6 @@ if __name__ == "__main__":
         query_gall_set, n_query_gall = prepare_set(X, global_img_pos, val_ids_lists[fold], transform=transform_test)
         query_gall_loader = torch.utils.data.DataLoader(query_gall_set, batch_size=test_batch_size, shuffle=False)
 
-
         best_map = 0
         for epoch in range(epochs):
 
