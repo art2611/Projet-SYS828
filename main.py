@@ -137,7 +137,7 @@ if __name__ == "__main__":
 
         # Préparation du query / gallery set pour la validation
         # A noter que query set = gallery set si on compte comparer chaque image de la base avec toute les autres
-        query_gall_set, n_query_gall = prepare_set(X, nb_img_per_id_to_keep, val_ids_lists[fold], transform=transform_test)
+        query_gall_set, n_query_gall = prepare_set(X, global_img_pos, val_ids_lists[fold], transform=transform_test)
         query_gall_loader = torch.utils.data.DataLoader(query_gall_set, batch_size=test_batch_size, shuffle=False)
 
 
