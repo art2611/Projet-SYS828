@@ -79,7 +79,7 @@ class prepare_set(data.Dataset):
 
     def __len__(self):
         #Should be the same len for both image 1 and image 2
-        return len(self.test_image)
+        return len(self.val_test_image)
 
 class LFW_training_Data(data.Dataset):
     def __init__(self, X, img_pos, img_ids_to_extract, transform=None, colorIndex=None):
